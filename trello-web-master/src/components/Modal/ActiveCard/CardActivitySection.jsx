@@ -33,7 +33,7 @@ function CardActivitySection({ cardComments = [], onAddCardComment }) {
     <Box sx={{ mt: 2 }}>
       {/* Xử lý thêm comment vào Card */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <Avatar sx={{ width: 36, height: 36, cursor: 'pointer' }} alt="trungquandev" src={currentUser?.avatar} />
+        <Avatar sx={{ width: 36, height: 36, cursor: 'pointer' }} alt={currentUser?.displayName} src={currentUser?.avatar} />
         <TextField fullWidth placeholder="Write a comment..." type="text" variant="outlined" multiline onKeyDown={handleAddCardComment} />
       </Box>
 
@@ -41,8 +41,8 @@ function CardActivitySection({ cardComments = [], onAddCardComment }) {
       {cardComments.length === 0 && <Typography sx={{ pl: '45px', fontSize: '14px', fontWeight: '500', color: '#b1b1b1' }}>No activity found!</Typography>}
       {cardComments.map((comment, index) => (
         <Box sx={{ display: 'flex', gap: 1, width: '100%', mb: 1.5 }} key={index}>
-          <Tooltip title="trungquandev">
-            <Avatar sx={{ width: 36, height: 36, cursor: 'pointer' }} alt="trungquandev" src={comment.userAvatar} />
+          <Tooltip title={comment.userDisplayName}>
+            <Avatar sx={{ width: 36, height: 36, cursor: 'pointer' }} alt={comment.userDisplayName} src={comment.userAvatar} />
           </Tooltip>
           <Box sx={{ width: 'inherit' }}>
             <Typography variant="span" sx={{ fontWeight: 'bold', mr: 1 }}>

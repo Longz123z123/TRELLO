@@ -132,6 +132,7 @@ const pushColumnOrderIds = async (column) => {
     throw new Error(error)
   }
 }
+
 // Lay 1 phan tu columnId ra khoi mang columnOrderIds dung $pull trong mongoDB
 const pullColumnOrderIds = async (column) => {
   try {
@@ -218,7 +219,20 @@ const getBoards = async (userId, page, itemsPerPage) => {
     throw new Error(error)
   }
 }
-
+const pushMembersIds = async (boardId, userId) => {
+  try {
+    const result = await GET_DB()
+      .collection(BOARD_COLLECTION_NAME)
+      .findOneAndUpdate(
+        { _id: new ObjectId(boardId) },
+        { $push: { memberIds: new ObjectId(userId) } },
+        { returnDocument: 'after' } // ttra ve ket qua moi sau khi cap nhat
+      )
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
@@ -228,5 +242,6 @@ export const boardModel = {
   pushColumnOrderIds,
   update,
   pullColumnOrderIds,
-  getBoards
+  getBoards,
+  pushMembersIds
 }

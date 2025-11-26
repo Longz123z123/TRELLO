@@ -9,6 +9,11 @@ import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware.'
 import cors from 'cors'
 import { corsOptions } from '~/config/cors'
 import cookieParser from 'cookie-parser'
+// Xử lý socket real-time với gói socket.io
+// https://socket.io/get-started/chat/#integrating-socketio
+import socketIo from 'socket.io'
+import http from 'http'
+import { inviteUserToBoardSocket } from './sockets/inviteUserToBoardSocket'
 const START_SERVER = () => {
   const app = express()
   //fix cache from disk cua expressjs
@@ -25,16 +30,22 @@ const START_SERVER = () => {
   app.use('/v1', APIs_V1)
   // Middleware xử lý lỗi tập trung
   app.use(errorHandlingMiddleware)
-
+  // Tao mot server moi boc thang app cua express de lam realtime voi socket.io
+  const server = http.createServer(app)
+  // Khoi tao bien io voi server va cors
+  const io = socketIo(server, { cors: corsOptions })
+  io.on('connection', (socket) => {
+    inviteUserToBoardSocket(socket)
+  })
   if (env.BUILD_MODE === 'production') {
-    // moi truong production (hien tai sp render)
-    app.listen(process.env.PORT, () => {
+    // Dung server.listen thay vi app.listen vi luc nay server da bao gom express app va da config socket.io
+    server.listen(process.env.PORT, () => {
       // eslint-disable-next-line no-console
       console.log(`3. Production: Hi ${env.AUTHOR}, Back-end Server is running successfully at Port: ${process.env.PORT}`)
     })
   } else {
     // moi truong local dev
-    app.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () => {
+    server.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () => {
       // eslint-disable-next-line no-console
       console.log(`3. Local Dev Hi ${env.AUTHOR}, Back-end Server is running successfully at Host:${env.LOCAL_DEV_APP_HOST} and Port:${env.LOCAL_DEV_APP_PORT}`)
     })

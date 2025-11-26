@@ -3,15 +3,16 @@ import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { INVITATION_TYPES, BOARD_INVITATION_STATUS } from '~/utils/constants'
-
+import { userModel } from './userModel'
+import { boardModel } from './boardModel'
 // ---------------------------
 //  Define Collection (name & schema)
 // ---------------------------
 export const INVITATION_COLLECTION_NAME = 'invitations'
 
 export const INVITATION_COLLECTION_SCHEMA = Joi.object({
-  inviterId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
-  inviteeId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+  inviterId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE), // nguoi di moi
+  inviteeId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE), // nguoi dc moi
 
   type: Joi.string()
     .required()
@@ -111,11 +112,54 @@ const update = async (invitationId, updateData) => {
     throw new Error(error)
   }
 }
+//query tong hop lay ~ ban ghi invation thuoc ve 1 user cu the
+const findByUser = async (userId) => {
+  try {
+    // const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(id) })
+    const queryConditions = [{ inviteeId: new ObjectId(userId) }, { _destroy: false }]
+    const results = await GET_DB()
+      .collection(INVITATION_COLLECTION_NAME)
+      .aggregate([
+        { $match: { $and: queryConditions } },
+        {
+          $lookup: {
+            from: userModel.USER_COLLECTION_NAME,
+            localField: 'inviterId',
+            foreignField: '_id',
+            as: 'inviter',
+            pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
+          }
+        },
+        {
+          $lookup: {
+            from: userModel.USER_COLLECTION_NAME,
+            localField: 'inviteeId',
+            foreignField: '_id',
+            as: 'invitee',
+            pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
+          }
+        },
+        {
+          $lookup: {
+            from: boardModel.BOARD_COLLECTION_NAME,
+            localField: 'boardInvitation.boardId',
+            foreignField: '_id',
+            as: 'board'
+          }
+        }
+      ])
+      .toArray()
+    return results
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 
 export const invitationModel = {
   INVITATION_COLLECTION_NAME,
   INVITATION_COLLECTION_SCHEMA,
   createNewBoardInvitation,
   findOneById,
-  update
+  update,
+  findByUser
 }
