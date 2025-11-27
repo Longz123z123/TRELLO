@@ -4,7 +4,6 @@ import ApiError from '~/utils/ApiError'
 
 const createNewBoardInvitation = async (req, res, next) => {
   // Điều kiện validate dữ liệu request body
-  console.log('>>> req.body tại validation:', req.body)
 
   const correctCondition = Joi.object({
     inviteeEmail: Joi.string().required(),

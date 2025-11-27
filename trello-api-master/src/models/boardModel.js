@@ -170,7 +170,7 @@ const update = async (boardId, updateData) => {
     throw new Error(error)
   }
 }
-const getBoards = async (userId, page, itemsPerPage) => {
+const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
   try {
     const queryConditions = [
       // DK1: Board chua bi xoa
@@ -180,6 +180,15 @@ const getBoards = async (userId, page, itemsPerPage) => {
         $or: [{ ownerIds: { $all: [new ObjectId(userId)] } }, { memberIds: { $all: [new ObjectId(userId)] } }]
       }
     ]
+    // Xu ly query filter cho tung truong hop / board vd theo truong title
+    if (queryFilters) {
+      Object.keys(queryFilters).forEach((key) => {
+        // Co phan biet hoa thuong
+        // queryConditions.push({ [key]: { $regex: queryFilters[key] } })
+        // 0 phan biet
+        queryConditions.push({ [key]: { $regex: new RegExp(queryFilters[key], 'i') } })
+      })
+    }
 
     // Pipeline rieng cho de doc
     const pipeline = [

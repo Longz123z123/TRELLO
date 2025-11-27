@@ -31,11 +31,21 @@ const createNew = async (reqBody) => {
     const getNewUser = await userModel.findOneById(createdUser.insertedId)
     //Gui email cho nguoi dung xac thuc tai khoan
     const verificationLink = `${WEBSITE_DOMAIN}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
-    const customSubject = 'Please verify email before using our services!'
+    const customSubject = 'Please verify your email!'
     const htmlContent = `
-    <h3>Here is your verification link: </h3>
-    <h3>${verificationLink}</h3>
-    <h3>Sincerely, <br/> zetDev </h3>
+    <div style="font-family: Arial; padding:16px; background:#f8f8f8;">
+        <h2 style="color:#4A90E2;">Verify Your Account</h2>
+        <p>Hello <b>${getNewUser.displayName}</b>,</p>
+        <p>Please click the link below to verify your email:</p>
+        <a href="${verificationLink}" 
+           style="display:inline-block; padding:10px 18px; background:#4A90E2; color:#fff; text-decoration:none; border-radius:5px;">
+           Verify Email
+        </a>
+        <p style="margin-top:10px;">Or copy this link:</p>
+        <p style="color:#4A90E2;">${verificationLink}</p>
+        <br/>
+        <p>Sincerely,<br/><b>zetDev Team</b></p>
+      </div>
     `
     // Goi toi Provider gui mail
     await BrevoProvider.sendEmail(getNewUser.email, customSubject, htmlContent)
