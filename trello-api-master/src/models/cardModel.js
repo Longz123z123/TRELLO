@@ -29,6 +29,16 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
       commentedAt: Joi.date().timestamp()
     })
     .default([]),
+  attachments: Joi.array()
+    .items({
+      _id: Joi.string(),
+      fileName: Joi.string(),
+      fileUrl: Joi.string(),
+      fileType: Joi.string(),
+      createdAt: Joi.date().timestamp(),
+      createdBy: Joi.string().pattern(OBJECT_ID_RULE)
+    })
+    .default([]),
 
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
@@ -144,6 +154,27 @@ const deleteOneById = async (cardId) => {
     throw new Error(error)
   }
 }
+const pushAttachment = async (cardId, attachmentData) => {
+  try {
+    const result = await GET_DB()
+      .collection(CARD_COLLECTION_NAME)
+      .findOneAndUpdate({ _id: new ObjectId(cardId) }, { $push: { attachments: attachmentData } }, { returnDocument: 'after' })
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+const pullAttachment = async (cardId, attachmentId) => {
+  try {
+    const result = await GET_DB()
+      .collection(CARD_COLLECTION_NAME)
+      .findOneAndUpdate({ _id: new ObjectId(cardId) }, { $pull: { attachments: { _id: new ObjectId(attachmentId) } } }, { returnDocument: 'after' })
+
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 
 export const cardModel = {
   CARD_COLLECTION_NAME,
@@ -154,5 +185,7 @@ export const cardModel = {
   deleteManyByColumnId,
   unshiftNewComment,
   updateMembers,
-  deleteOneById
+  deleteOneById,
+  pushAttachment,
+  pullAttachment
 }

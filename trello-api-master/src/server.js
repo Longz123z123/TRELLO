@@ -15,6 +15,7 @@ import socketIo from 'socket.io'
 import http from 'http'
 import { inviteUserToBoardSocket } from './sockets/inviteUserToBoardSocket'
 import { boardRealtimeSocket } from './sockets/boardRealtimeSocket'
+
 const START_SERVER = () => {
   const app = express()
   //fix cache from disk cua expressjs
@@ -28,6 +29,7 @@ const START_SERVER = () => {
   app.use(cors(corsOptions))
   // Enable req.body json data
   app.use(express.json())
+  app.use('/uploads', express.static('uploads'))
   app.use('/v1', APIs_V1)
   // Middleware xử lý lỗi tập trung
   app.use(errorHandlingMiddleware)

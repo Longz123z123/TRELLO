@@ -38,10 +38,14 @@ import { updateCardInBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { updateCardDetailsAPI } from '~/apis'
 import { selectCurrentUser } from '~/redux/user/userSlice'
 import { CARD_MEMBER_ACTIONS } from '~/utils/constants'
-import { deleteCardAPI } from '~/apis'
+import { deleteCardAPI, uploadAttachmentAPI, deleteAttachmentAPI } from '~/apis'
 import { useConfirm } from 'material-ui-confirm'
 import { removeCardInBoard, selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { socketIoInstance } from '~/socketClient'
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'
+import DescriptionIcon from '@mui/icons-material/Description'
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
+import ArticleIcon from '@mui/icons-material/Article'
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -66,6 +70,7 @@ const SidebarItem = styled(Box)(({ theme }) => ({
  * Note: Modal là một low-component mà bọn MUI sử dụng bên trong những thứ như Dialog, Drawer, Menu, Popover. Ở đây dĩ nhiên chúng ta có thể sử dụng Dialog cũng không thành vấn đề gì, nhưng sẽ sử dụng Modal để dễ linh hoạt tùy biến giao diện từ con số 0 cho phù hợp với mọi nhu cầu nhé.
  */
 function ActiveCard() {
+  const BASE_URL = import.meta.env.VITE_BACKEND_URL
   const dispatch = useDispatch()
   const activeCard = useSelector(selectCurrentActiveCard)
   const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
@@ -108,6 +113,37 @@ function ActiveCard() {
       { pending: 'Updating...' }
     )
   }
+  const onUploadAttachment = (event) => {
+    const file = event.target?.files[0]
+    if (!file) return
+
+    toast.promise(
+      uploadAttachmentAPI(activeCard._id, file)
+        .then((updatedCard) => {
+          // Cập nhật card đang mở
+          dispatch(updateCurrentActiveCard(updatedCard))
+
+          // Cập nhật card trong board
+          dispatch(updateCardInBoard(updatedCard))
+
+          // realtime
+          socketIoInstance.emit('FE_BOARD_UPDATED', board._id)
+        })
+        .finally(() => {
+          event.target.value = ''
+        }),
+      { pending: 'Uploading attachment...' }
+    )
+  }
+  const renderAttachmentIcon = (mime) => {
+    if (mime.includes('pdf')) return <PictureAsPdfIcon color="error" />
+    if (mime.includes('zip')) return <ArchiveOutlinedIcon color="warning" />
+    if (mime.includes('word') || mime.includes('officedocument')) return <DescriptionIcon color="primary" />
+    if (mime.includes('text') || mime.includes('json')) return <ArticleIcon color="success" />
+
+    return <InsertDriveFileIcon color="disabled" />
+  }
+
   const onAddCardComment = async (commentToAdd) => {
     await callApiUpdateCard({ commentToAdd })
   }
@@ -141,7 +177,35 @@ function ActiveCard() {
       })
       .catch(() => {})
   }
+  const confirmDeleteAttachment = useConfirm()
 
+  const handleDeleteAttachment = (attachmentId) => {
+    confirmDeleteAttachment({
+      title: 'Delete Attachment?',
+      description: 'This action cannot be undone. Do you really want to delete this attachment?',
+      confirmationText: 'Delete',
+      cancellationText: 'Cancel'
+    })
+      .then(() => {
+        // Gọi API xoá trên BE
+        toast.promise(
+          deleteAttachmentAPI(activeCard._id, attachmentId).then((updatedCard) => {
+            // Cập nhật Card đang mở
+            dispatch(updateCurrentActiveCard(updatedCard))
+
+            // Cập nhật Card trong Board
+            dispatch(updateCardInBoard(updatedCard))
+
+            // Realtime
+            socketIoInstance.emit('FE_BOARD_UPDATED', board._id)
+
+            toast.success('Attachment deleted!')
+          }),
+          { pending: 'Deleting attachment...' }
+        )
+      })
+      .catch(() => {})
+  }
   return (
     <Modal
       disableScrollLock
@@ -206,6 +270,56 @@ function ActiveCard() {
               {/* Feature 03: Xử lý mô tả của Card */}
               <CardDescriptionMdEditor cardDescriptionProps={activeCard?.description} handleUpdateCardDes={onUpdateCardDescription} />
             </Box>
+            {activeCard?.attachments?.length > 0 && (
+              <Box sx={{ mb: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                  <AttachFileOutlinedIcon />
+                  <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>
+                    Attachments
+                  </Typography>
+                </Box>
+
+                <Stack spacing={1}>
+                  {activeCard.attachments.map((att) => (
+                    <Box
+                      key={att._id}
+                      sx={{
+                        padding: '10px',
+                        border: (theme) => `1px solid ${theme.palette.divider}`,
+                        borderRadius: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}
+                    >
+                      {/* LEFT: icon + filename */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {renderAttachmentIcon(att.fileType)}
+
+                        <a href={`${BASE_URL}/${att.filePath}`} target="_blank" rel="noreferrer" style={{ color: '#0c66e4', fontWeight: 500 }}>
+                          {att.fileName}
+                        </a>
+                      </Box>
+
+                      {/* RIGHT: timestamp + delete icon */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography sx={{ fontSize: '12px', color: 'gray' }}>{new Date(att.createdAt).toLocaleString()}</Typography>
+
+                        <CancelIcon
+                          sx={{
+                            cursor: 'pointer',
+                            color: '#b71c1c',
+                            fontSize: 20,
+                            '&:hover': { color: '#f44336' }
+                          }}
+                          onClick={() => handleDeleteAttachment(att._id)}
+                        />
+                      </Box>
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+            )}
 
             <Box sx={{ mb: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -247,9 +361,10 @@ function ActiveCard() {
                 <VisuallyHiddenInput type="file" onChange={onUploadCardCover} />
               </SidebarItem>
 
-              <SidebarItem>
+              <SidebarItem component="label" className="active">
                 <AttachFileOutlinedIcon fontSize="small" />
                 Attachment
+                <VisuallyHiddenInput type="file" onChange={onUploadAttachment} />
               </SidebarItem>
               <SidebarItem>
                 <LocalOfferOutlinedIcon fontSize="small" />

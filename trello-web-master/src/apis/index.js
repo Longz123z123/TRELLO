@@ -39,7 +39,18 @@ export const deleteCardAPI = async (cardId) => {
   const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/cards/${cardId}`)
   return response.data
 }
+export const uploadAttachmentAPI = async (cardId, file) => {
+  const formData = new FormData()
+  formData.append('attachment', file)
 
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/cards/${cardId}/attachment`, formData)
+
+  return response.data
+}
+export const deleteAttachmentAPI = async (cardId, attachmentId) => {
+  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/cards/${cardId}/attachments/${attachmentId}`)
+  return response.data
+}
 /** Users */
 export const registerUserAPI = async (data) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/users/register`, data)

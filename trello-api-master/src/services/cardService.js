@@ -73,9 +73,27 @@ const deleteCard = async (cardId) => {
     throw error
   }
 }
+const addAttachment = async (cardId, attachmentData) => {
+  try {
+    const updatedCard = await cardModel.pushAttachment(cardId, attachmentData)
+    return updatedCard
+  } catch (error) {
+    throw error
+  }
+}
+const deleteAttachment = async (cardId, attachmentId) => {
+  try {
+    const updatedCard = await cardModel.pullAttachment(cardId, attachmentId)
+    return updatedCard
+  } catch (error) {
+    throw error
+  }
+}
 
 export const cardService = {
   createNew,
   update,
-  deleteCard
+  deleteCard,
+  addAttachment,
+  deleteAttachment
 }
