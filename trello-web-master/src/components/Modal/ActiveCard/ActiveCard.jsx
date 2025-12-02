@@ -38,6 +38,9 @@ import { updateCardInBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { updateCardDetailsAPI } from '~/apis'
 import { selectCurrentUser } from '~/redux/user/userSlice'
 import { CARD_MEMBER_ACTIONS } from '~/utils/constants'
+import { deleteCardAPI } from '~/apis'
+import { useConfirm } from 'material-ui-confirm'
+import { removeCardInBoard } from '~/redux/activeBoard/activeBoardSlice'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -108,6 +111,34 @@ function ActiveCard() {
   const onUpdateCardMemberIds = async (incomingMemberInfor) => {
     await callApiUpdateCard({ incomingMemberInfor })
   }
+  const confirmDeleteCard = useConfirm()
+
+  const handleDeleteCard = () => {
+    confirmDeleteCard({
+      title: 'Delete Card?',
+      description: 'This action will permanently delete this Card. Are you sure?',
+      confirmationText: 'Confirm',
+      cancellationText: 'Cancel'
+    })
+      .then(async () => {
+        try {
+          // 1. Gọi API xóa card
+          await deleteCardAPI(activeCard._id)
+
+          // 2. FE: đóng modal ActiveCard
+          dispatch(clearAndHideCurrentActiveCard())
+
+          // 3. FE: remove card khỏi Board state
+          dispatch(removeCardInBoard(activeCard))
+
+          toast.success('Card deleted successfully!')
+        } catch (error) {
+          toast.error('Failed to delete card!')
+        }
+      })
+      .catch(() => {})
+  }
+
   return (
     <Modal
       disableScrollLock
@@ -232,6 +263,10 @@ function ActiveCard() {
               <SidebarItem>
                 <AutoFixHighOutlinedIcon fontSize="small" />
                 Custom Fields
+              </SidebarItem>
+              <SidebarItem sx={{ color: 'error.main', fontWeight: '700' }} onClick={handleDeleteCard}>
+                <ArchiveOutlinedIcon fontSize="small" color="error" />
+                Delete Card
               </SidebarItem>
             </Stack>
 

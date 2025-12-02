@@ -56,8 +56,26 @@ const update = async (cardId, reqBody, cardCoverFile, userInfor) => {
     throw error
   }
 }
+const deleteCard = async (cardId) => {
+  try {
+    // Lấy card ra để biết columnId
+    const card = await cardModel.findOneById(cardId)
+    if (!card) throw new Error('Card not found')
+
+    // Xoá cardId khỏi column.cardOrderIds
+    await columnModel.pullCardOrderIds(card.columnId.toString(), cardId)
+
+    // Xoá card khỏi collection cards
+    await cardModel.deleteOneById(cardId)
+
+    return true
+  } catch (error) {
+    throw error
+  }
+}
 
 export const cardService = {
   createNew,
-  update
+  update,
+  deleteCard
 }

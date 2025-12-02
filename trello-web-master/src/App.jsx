@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux'
 import { selectCurrentUser } from '~/redux/user/userSlice'
 import Settings from '~/pages/Settings/Settings'
 import Boards from './pages/Boards'
+import ChatBox from './components/Chatbot/ChatBox'
 //Cac route nao can dang nhap tai khoan thi moi cho truy cap vao trang do
 const ProtectedRoute = ({ user }) => {
   if (!user) return <Navigate to="/login" replace="true" />
@@ -17,20 +18,28 @@ function App() {
   const currentUser = useSelector(selectCurrentUser)
 
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/boards" replace={true} />} />
-      <Route element={<ProtectedRoute user={currentUser} />}>
-        <Route path="/boards/:boardId" element={<Board />} />
-        <Route path="/boards" element={<Boards />} />
+    <>
+      {/* Routes */}
+      <Routes>
+        <Route path="/" element={<Navigate to="/boards" replace={true} />} />
 
-        <Route path="/settings/account" element={<Settings />} />
-        <Route path="/settings/security" element={<Settings />} />
-      </Route>
-      <Route path="/login" element={<Auth />} />
-      <Route path="/register" element={<Auth />} />
-      <Route path="/account/verification" element={<AccountVerification />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        <Route element={<ProtectedRoute user={currentUser} />}>
+          <Route path="/boards/:boardId" element={<Board />} />
+          <Route path="/boards" element={<Boards />} />
+
+          <Route path="/settings/account" element={<Settings />} />
+          <Route path="/settings/security" element={<Settings />} />
+        </Route>
+
+        <Route path="/login" element={<Auth />} />
+        <Route path="/register" element={<Auth />} />
+        <Route path="/account/verification" element={<AccountVerification />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+
+      {/* ⭐ Chatbox AI nằm cố định toàn trang ⭐ */}
+      <ChatBox />
+    </>
   )
 }
 

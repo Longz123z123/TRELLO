@@ -5,6 +5,8 @@ import { columnRoute } from '~/routes/v1/columnRoute'
 import { cardRoute } from '~/routes/v1/cardRoute'
 import { userRoute } from '~/routes/v1/userRoute'
 import { invitationRoute } from '~/routes/v1/invitationRoute'
+import { chatbotRoute } from './chatbotRoute'
+
 const Router = express.Router()
 
 Router.get('/status', (req, res) => {
@@ -22,5 +24,6 @@ Router.use('/users', userRoute)
 Router.use('/users', userRoute)
 // invitations APIs
 Router.use('/invitations', invitationRoute)
-
+// Chatbot APIs
+Router.use('/chatbot', chatbotRoute)
 export const APIs_V1 = Router

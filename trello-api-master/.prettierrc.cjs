@@ -7,6 +7,6 @@ module.exports = {
   trailingComma: 'none', // không thêm dấu phẩy cuối
   arrowParens: 'always', // (x) => x
   endOfLine: 'lf', // xuống dòng chuẩn LF
-  printWidth: 350,
+  printWidth: 250,
   quoteProps: 'preserve'
 }

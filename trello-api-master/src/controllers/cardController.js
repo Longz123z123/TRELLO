@@ -20,7 +20,22 @@ const update = async (req, res, next) => {
     next(error)
   }
 }
+const deleteCard = async (req, res, next) => {
+  try {
+    const cardId = req.params.id
+    await cardService.deleteCard(cardId)
+
+    res.status(StatusCodes.OK).json({
+      deleteResult: 'Card deleted successfully',
+      cardId
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const cardController = {
   createNew,
-  update
+  update,
+  deleteCard
 }
