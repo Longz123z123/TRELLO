@@ -2,7 +2,7 @@
 
 import express from 'express'
 import exitHook from 'async-exit-hook'
-import { CONNECT_DB, GET_DB, CLOSE_DB } from '~/config/mongodb'
+import { CONNECT_DB, CLOSE_DB } from '~/config/mongodb'
 import { env } from '~/config/environment'
 import { APIs_V1 } from '~/routes/v1'
 import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware.'
@@ -14,6 +14,7 @@ import cookieParser from 'cookie-parser'
 import socketIo from 'socket.io'
 import http from 'http'
 import { inviteUserToBoardSocket } from './sockets/inviteUserToBoardSocket'
+import { boardRealtimeSocket } from './sockets/boardRealtimeSocket'
 const START_SERVER = () => {
   const app = express()
   //fix cache from disk cua expressjs
@@ -36,6 +37,7 @@ const START_SERVER = () => {
   const io = socketIo(server, { cors: corsOptions })
   io.on('connection', (socket) => {
     inviteUserToBoardSocket(socket)
+    boardRealtimeSocket(io, socket)
   })
   if (env.BUILD_MODE === 'production') {
     // Dung server.listen thay vi app.listen vi luc nay server da bao gom express app va da config socket.io

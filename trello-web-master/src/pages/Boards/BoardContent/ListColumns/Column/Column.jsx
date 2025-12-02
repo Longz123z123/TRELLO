@@ -27,6 +27,7 @@ import { cloneDeep } from 'lodash'
 import { updateCurrentActiveBoard, selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import ToggleFocusInput from '~/components/Form/ToggleFocusInput'
+import { socketIoInstance } from '~/socketClient'
 function Column({ column }) {
   const board = useSelector(selectCurrentActiveBoard)
   const dispatch = useDispatch()
@@ -96,6 +97,8 @@ function Column({ column }) {
     }
 
     dispatch(updateCurrentActiveBoard(newBoard))
+    socketIoInstance.emit('FE_BOARD_UPDATED', board._id)
+
     // Dong trang thai them Card moi va clear Input
     ;(toggleOpenNewCardForm(), setNewCardTitle(''))
   }
@@ -124,6 +127,7 @@ function Column({ column }) {
         // Goi API xly phia BE
         deleteColumnDetailsAPI(column._id).then((res) => {
           toast.success(res?.deleteResult)
+          socketIoInstance.emit('FE_BOARD_UPDATED', board._id)
         })
       })
       .catch(() => {})
@@ -137,8 +141,10 @@ function Column({ column }) {
         columnToUpdate.title = newTitle
       }
       dispatch(updateCurrentActiveBoard(newBoard))
+      socketIoInstance.emit('FE_BOARD_UPDATED', board._id)
     })
   }
+
   return (
     // Phải bọc div ở đây vì vấn đề chiều cao của column khi kéo thả sẽ có bug kiểu kiểu flickering
     <div ref={setNodeRef} style={dntKitColumnStyles} {...attributes}>

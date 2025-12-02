@@ -37,8 +37,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
 
-      {/* ⭐ Chatbox AI nằm cố định toàn trang ⭐ */}
-      <ChatBox />
+      {currentUser && <ChatBox />}
     </>
   )
 }

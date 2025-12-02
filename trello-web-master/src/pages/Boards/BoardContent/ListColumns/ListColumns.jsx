@@ -3,21 +3,16 @@ import Column from './Column/Column'
 import Button from '@mui/material/Button'
 import NoteAddIcon from '@mui/icons-material/NoteAdd'
 import TextField from '@mui/material/TextField'
-import {
-  SortableContext,
-  horizontalListSortingStrategy
-} from '@dnd-kit/sortable'
+import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
 import { useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import { toast } from 'react-toastify'
 import { createNewColumnAPI } from '~/apis'
 import { generatePlaceholderCard } from '~/utils/formmatters'
 import { cloneDeep } from 'lodash'
-import {
-  updateCurrentActiveBoard,
-  selectCurrentActiveBoard
-} from '~/redux/activeBoard/activeBoardSlice'
+import { updateCurrentActiveBoard, selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { useDispatch, useSelector } from 'react-redux'
+import { socketIoInstance } from '~/socketClient'
 function ListColumns({ columns }) {
   const board = useSelector(selectCurrentActiveBoard)
   const dispatch = useDispatch()
@@ -57,14 +52,12 @@ function ListColumns({ columns }) {
     newBoard.columnOrderIds.push(createdColumn._id)
     // setBoard(newBoard)
     dispatch(updateCurrentActiveBoard(newBoard))
+    socketIoInstance.emit('FE_BOARD_UPDATED', board._id)
     // Dong trang thai them Column moi va clear Input
     ;(toggleOpenNewColumnForm(), setNewColumnTitle(''))
   }
   return (
-    <SortableContext
-      items={columns?.map((c) => c._id)}
-      strategy={horizontalListSortingStrategy}
-    >
+    <SortableContext items={columns?.map((c) => c._id)} strategy={horizontalListSortingStrategy}>
       <Box
         sx={{
           bgcolor: 'inherit',

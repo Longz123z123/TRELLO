@@ -112,7 +112,7 @@ function Boards() {
 
           <Grid xs={12} sm={9}>
             <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
-              Your boards:
+              Your workspace boards
             </Typography>
 
             {/* Trường hợp gọi API nhưng không tồn tại cái board nào trong Database trả về */}

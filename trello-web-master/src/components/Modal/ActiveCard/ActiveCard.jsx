@@ -40,8 +40,8 @@ import { selectCurrentUser } from '~/redux/user/userSlice'
 import { CARD_MEMBER_ACTIONS } from '~/utils/constants'
 import { deleteCardAPI } from '~/apis'
 import { useConfirm } from 'material-ui-confirm'
-import { removeCardInBoard } from '~/redux/activeBoard/activeBoardSlice'
-
+import { removeCardInBoard, selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
+import { socketIoInstance } from '~/socketClient'
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -70,6 +70,7 @@ function ActiveCard() {
   const activeCard = useSelector(selectCurrentActiveCard)
   const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
   const currentUser = useSelector(selectCurrentUser)
+  const board = useSelector(selectCurrentActiveBoard)
   // const [isOpen, setIsOpen] = useState(true)
   // const handleOpenModal = () => setIsOpen(true)
   const handleCloseModal = () => {
@@ -81,6 +82,8 @@ function ActiveCard() {
     dispatch(updateCurrentActiveCard(updatedCard))
     //B2 Cap nhat lai ban ghi card trong activeBoard nested data
     dispatch(updateCardInBoard(updatedCard))
+    socketIoInstance.emit('FE_BOARD_UPDATED', board._id)
+
     return updatedCard
   }
   const onUpdateCardTitle = (newTitle) => {
@@ -130,8 +133,8 @@ function ActiveCard() {
 
           // 3. FE: remove card khỏi Board state
           dispatch(removeCardInBoard(activeCard))
-
           toast.success('Card deleted successfully!')
+          socketIoInstance.emit('FE_BOARD_UPDATED', board._id)
         } catch (error) {
           toast.error('Failed to delete card!')
         }

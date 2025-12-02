@@ -11,7 +11,7 @@ import { fetchBoardDetailsAPI, updateCurrentActiveBoard, selectCurrentActiveBoar
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import ActiveCard from '~/components/Modal/ActiveCard/ActiveCard'
-
+import { socketIoInstance } from '~/socketClient'
 function Board() {
   // const [board, setBoard] = useState(null)
   const dispatch = useDispatch()
@@ -21,7 +21,29 @@ function Board() {
     // call API
     dispatch(fetchBoardDetailsAPI(boardId))
   }, [dispatch, boardId])
+  // 2. Socket: join/leave room + lắng nghe BE_BOARD_UPDATED
+  useEffect(() => {
+    if (!boardId) return
+    // console.log('[Board] FE_JOIN_BOARD:', boardId)
+    socketIoInstance.emit('FE_JOIN_BOARD', boardId)
 
+    const onBoardUpdated = (updatedBoardId) => {
+      // console.log('[Board] Nhận BE_BOARD_UPDATED với boardId:', updatedBoardId)
+
+      if (updatedBoardId !== boardId) return
+
+      // Reload lại board
+      dispatch(fetchBoardDetailsAPI(boardId))
+    }
+
+    socketIoInstance.on('BE_BOARD_UPDATED', onBoardUpdated)
+
+    return () => {
+      // console.log('[Board] FE_LEAVE_BOARD:', boardId)
+      socketIoInstance.emit('FE_LEAVE_BOARD', boardId)
+      socketIoInstance.off('BE_BOARD_UPDATED', onBoardUpdated)
+    }
+  }, [dispatch, boardId])
   // function nay co nv goi API va xu ly keo tha Column done
   const moveColumns = (dndOrderedColumns) => {
     // Cap nhat lai cho chuan du lieu state Board
@@ -32,8 +54,8 @@ function Board() {
     dispatch(updateCurrentActiveBoard(newBoard))
 
     // goi API update board
-    updateBoardDetailsAPI(newBoard._id, {
-      columnOrderIds: dndOrderedColumnsIds
+    updateBoardDetailsAPI(newBoard._id, { columnOrderIds: dndOrderedColumnsIds }).then(() => {
+      socketIoInstance.emit('FE_BOARD_UPDATED', boardId)
     })
   }
 
@@ -49,7 +71,9 @@ function Board() {
     dispatch(updateCurrentActiveBoard(newBoard))
 
     // goi API update board
-    updateColumnDetailsAPI(columnId, { cardOrderIds: dndOrderCardIds })
+    updateColumnDetailsAPI(columnId, { cardOrderIds: dndOrderCardIds }).then(() => {
+      socketIoInstance.emit('FE_BOARD_UPDATED', boardId)
+    })
   }
   /**
    * Khi di chuyển card sang Column khác:
@@ -76,6 +100,8 @@ function Board() {
       prevCardOrderIds,
       nextColumnId,
       nextCardOrderIds: dndOrderedColumns.find((column) => column._id === nextColumnId)?.cardOrderIds
+    }).then(() => {
+      socketIoInstance.emit('FE_BOARD_UPDATED', boardId)
     })
   }
 
