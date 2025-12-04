@@ -4,6 +4,8 @@ import LoginForm from './LoginForm'
 import RegisterForm from './RegisterForm'
 import { useSelector } from 'react-redux'
 import { selectCurrentUser } from '~/redux/user/userSlice'
+import bgLogin from '~/assets/auth/login-register-bg.jpg'
+
 function Auth() {
   const location = useLocation()
   // console.log(location)
@@ -20,7 +22,7 @@ function Auth() {
         minHeight: '100vh',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        background: 'url("src/assets/auth/login-register-bg.jpg")',
+        background: `url(${bgLogin})`,
         backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover',
         backgroundPosition: 'center',

@@ -175,6 +175,11 @@ const pullAttachment = async (cardId, attachmentId) => {
     throw new Error(error)
   }
 }
+const deleteManyByBoardId = async (boardId) => {
+  return await GET_DB()
+    .collection(CARD_COLLECTION_NAME)
+    .deleteMany({ boardId: new ObjectId(boardId) })
+}
 
 export const cardModel = {
   CARD_COLLECTION_NAME,
@@ -187,5 +192,6 @@ export const cardModel = {
   updateMembers,
   deleteOneById,
   pushAttachment,
-  pullAttachment
+  pullAttachment,
+  deleteManyByBoardId
 }

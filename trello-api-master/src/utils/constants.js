@@ -3,7 +3,7 @@ import { env } from '~/config/environment'
 // ~ domain duoc phep truy cap toi goi tai nguyen cua server
 export const WHITELIST_DOMAINS = [
   'http://localhost:5173', //
-  'https://trello-web-sooty-seven.vercel.app'
+  'https://fe-trello-ten.vercel.app'
 ]
 
 export const BOARD_TYPE = {

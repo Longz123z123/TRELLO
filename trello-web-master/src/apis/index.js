@@ -98,3 +98,8 @@ export const askChatbotAPI = async (message) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/chatbot/ask`, { message })
   return response.data
 }
+
+export const deleteBoardAPI = async (boardId) => {
+  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/boards/${boardId}`)
+  return response.data
+}

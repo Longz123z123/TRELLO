@@ -9,7 +9,7 @@
   },
   "scripts": {
     "lint": "eslint src --ext js --report-unused-disable-directives --max-warnings 0",
-    "clean": "rm -rf build && mkdir build",
+    "clean": "rimraf build && mkdir build",
     "build-babel": "babel ./src -d ./build/src",
     "build": "npm run clean && npm run build:base",
     "production": "cross-env BUILD_MODE=production npm run clean && npm run build-babel && cross-env BUILD_MODE=production node ./build/src/server.js",
@@ -49,7 +49,8 @@
     "@babel/preset-env": "^7.22.10",
     "babel-plugin-module-resolver": "^5.0.0",
     "eslint": "^8.47.0",
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "rimraf": "^6.1.2"
   },
   "packageManager": "yarn@4.11.0+sha512.4e54aeace9141df2f0177c266b05ec50dc044638157dae128c471ba65994ac802122d7ab35bcd9e81641228b7dcf24867d28e750e0bcae8a05277d600008ad54"
 }

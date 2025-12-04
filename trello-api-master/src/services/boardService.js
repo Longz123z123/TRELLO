@@ -98,10 +98,49 @@ const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
     throw error
   }
 }
+const deleteBoard = async (userId, boardId) => {
+  try {
+    const board = await boardModel.findOneById(boardId)
+    if (!board) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found!')
+    }
+
+    // Chỉ Owner mới được xoá Board
+    const isOwner = board.ownerIds.some((id) => id.toString() === userId.toString())
+    if (!isOwner) {
+      throw new ApiError(StatusCodes.FORBIDDEN, 'You do not have permission to delete this board!')
+    }
+
+    // 1. Lấy toàn bộ columns của board
+    const columns = await columnModel.getColumnsByBoardId(boardId)
+    const columnIds = columns.map((c) => c._id)
+
+    // 2. Xóa tất cả cards thuộc board
+    await cardModel.deleteManyByBoardId(boardId)
+
+    // 3. Xóa tất cả columns thuộc board
+    await columnModel.deleteManyByBoardId(boardId)
+
+    // 4. Soft delete Board
+    const deletedBoard = await boardModel.update(boardId, {
+      _destroy: true,
+      updatedAt: Date.now()
+    })
+
+    return {
+      deletedBoard,
+      deletedColumns: columnIds.length,
+      deletedCards: 'all cards in board removed'
+    }
+  } catch (error) {
+    throw error
+  }
+}
 export const boardService = {
   createNew,
   getDetails,
   update,
   moveCardToDifColumn,
-  getBoards
+  getBoards,
+  deleteBoard
 }

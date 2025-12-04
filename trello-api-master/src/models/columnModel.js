@@ -98,7 +98,18 @@ const pullCardOrderIds = async (columnId, cardId) => {
     throw new Error(error)
   }
 }
+const getColumnsByBoardId = async (boardId) => {
+  return await GET_DB()
+    .collection(COLUMN_COLLECTION_NAME)
+    .find({ boardId: new ObjectId(boardId) })
+    .toArray()
+}
 
+const deleteManyByBoardId = async (boardId) => {
+  return await GET_DB()
+    .collection(COLUMN_COLLECTION_NAME)
+    .deleteMany({ boardId: new ObjectId(boardId) })
+}
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
@@ -107,5 +118,7 @@ export const columnModel = {
   pushCardOrderIds,
   update,
   deleteOneById,
-  pullCardOrderIds
+  pullCardOrderIds,
+  getColumnsByBoardId,
+  deleteManyByBoardId
 }
